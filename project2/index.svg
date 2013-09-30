@@ -1,0 +1,741 @@
+<?xml version="1.0" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     version="1.1" baseProfile="full" width="100%" height="100%" onload="initRotation()">
+	 <style type="text/css">
+		g.buttongrp:hover
+		{
+			opacity: 0.9;		
+		}
+	 </style>
+	 <rect id="sky" fill="url(#skyColor)" opacity="0.5" width="100%" height="550" />
+	 <rect id="grass" fill="url(#grassColor)" x="0" y="550" opacity="0.8" width="100%" height="100" />
+	<desc>JavaScript Functions</desc>
+	<script type="text/javascript">
+		<![CDATA[
+		
+	/**
+	*	Works best in Opera. I'm not sure about other browsers. Chrome wont work well.
+	*/
+		
+	/**
+	*	Note: I tried to create the motion(animateMotion) of sun and moon along
+	*	their repective paths(i.e. #sunPath and #moonPath) so that each time when
+	*	Morning/Night is generated at the same time sun/moon should animate along the
+	*	paths. But this was not happening as the browser does not reload correctly.
+	*	Due to this I use something similar to set functionality where I change the
+	*	attributes of sun/moon and few other elements accordingly.
+	* 	I have left the code commented that was suppsoed to generate the above mentioned
+	*	functionality. The commented code can be found in the functions setSun() & setMoon().
+	*/
+	
+		var svgns="http://www.w3.org/2000/svg";
+		var xlinkns="http://www.w3.org/1999/xlink";
+		
+		rotationSpeed=10; 	//range of this should be between 2-10
+		speedToDisplay=0;	//the scaled speed thats displayed to the user
+		windSpeed=2;		//speed of the wind...constant at 2m/s
+		isMorning=false;	//boolean to check for Morning
+		isNight=false;		//boolean to check for Night
+		
+		/*
+		*	This Function is called on load which initializes Rotation and Morning Colors.
+		*/
+		
+			function initRotation()
+			{				
+				//isMorning=true;
+				
+				morning();
+				
+				displaySpeed();
+				displayEnergy();
+				
+				var propEle=document.createElementNS(svgns,'animateTransform');
+				propEle.setAttributeNS(null,'id','propSpeed');
+				propEle.setAttributeNS(null,'attributeName','transform');
+				propEle.setAttributeNS(null,'type','rotate');
+				propEle.setAttributeNS(null,'from','0,60,200');
+				propEle.setAttributeNS(null,'to','360,60,200');
+				propEle.setAttributeNS(null,'repeatCount','indefinite');
+				propEle.setAttributeNS(null,'dur',rotationSpeed+'s');
+				
+				$('propeller').appendChild(propEle);								
+																
+			}
+			
+			/**
+			*	This function is called by increase/decrease speed functions of the Wind Mill speed
+			*	controls that change the speed of the propellers on the wind mills.
+			*/
+	
+			function changeSpeed(toWhat)
+			{	
+				var something=$('propSpeed');
+				var currentDuration = something.getAttributeNS(null,'dur');
+								
+				$('propeller').removeChild(document.getElementById('propeller').lastChild);
+								
+				var propEle=document.createElementNS(svgns,'animateTransform');
+				propEle.setAttributeNS(null,'id','propSpeed');
+				propEle.setAttributeNS(null,'attributeName','transform');
+				propEle.setAttributeNS(null,'type','rotate');
+				propEle.setAttributeNS(null,'from','0,60,200');
+				propEle.setAttributeNS(null,'to','360,60,200');
+				propEle.setAttributeNS(null,'repeatCount','indefinite');
+				propEle.setAttributeNS(null,'dur',toWhat+'s');
+				
+				$('propeller').appendChild(propEle);
+				displaySpeed();	
+				displayEnergy();
+			}
+			
+			/**
+			* This function is called on click event of increase speed button.
+			*/
+			
+			function increaseSpeed()
+			{
+				rotationSpeed=rotationSpeed-2;
+				if(rotationSpeed<=10 && rotationSpeed>=2)
+				{					
+					changeSpeed(rotationSpeed);
+				}
+				else
+				{
+					rotationSpeed=2;
+					changeSpeed(rotationSpeed);
+					//do Nothing
+				}		
+				
+			}//end function increaseSpeed
+			
+			/**
+			* This function is called on click event of decrease speed button.
+			*/
+			
+			function decreaseSpeed()
+			{
+				rotationSpeed=rotationSpeed+2;
+				if(rotationSpeed<=10 && rotationSpeed>=2)
+				{					
+					changeSpeed(rotationSpeed);
+				}
+				else
+				{	
+					rotationSpeed=10;
+					changeSpeed(rotationSpeed);				
+				}
+			}//end function decreaseSpeed()
+			
+			/**
+			*	This function scales the speeds in proportion to the duration attribute of
+			*	rotation on the propellers.
+			*/
+						
+			function scaleSpeedToDisplay()
+			{			
+				if(rotationSpeed==2)
+				{
+					speedToDisplay=10;
+				}
+				else if(rotationSpeed==4)
+				{
+					speedToDisplay=8;
+				}
+				else if(rotationSpeed==6)
+				{
+					speedToDisplay=6;
+				}
+				else if(rotationSpeed==8)
+				{
+					speedToDisplay=4;
+				}
+				else if(rotationSpeed==10)
+				{
+					speedToDisplay=2;
+				}
+				
+				return speedToDisplay;
+			}
+			
+			/**
+			*	This function is called to set the amount of light in the light tower
+			*	depending on the current speed of the wind mill.
+			*/			
+			
+			function lightGlow(speed)
+			{				
+				var amt=speed;
+				if(amt==10)
+				{
+					$('light').setAttributeNS(svgns,'fill','url(#sunColor)');
+					$('light2').setAttributeNS(svgns,'fill','url(#sunColor)');
+				}
+				else if(amt==8)
+				{
+					$('light').setAttributeNS(svgns,'fill','#FFFF00');
+					$('light2').setAttributeNS(svgns,'fill','#FFFF00');
+				}
+				else if(amt==6)
+				{
+					$('light').setAttributeNS(svgns,'fill','#FFEA00');
+					$('light2').setAttributeNS(svgns,'fill','#FFEA00');
+				}
+				else if(amt==4)
+				{
+					$('light').setAttributeNS(svgns,'fill','#FFBF00');
+					$('light2').setAttributeNS(svgns,'fill','#FFBF00');
+				}
+				else if(amt==2)
+				{
+					$('light').setAttributeNS(svgns,'fill','#FF9305');
+					$('light2').setAttributeNS(svgns,'fill','#FF9305');
+				}
+			}
+			
+			/**
+			* This function displays the speed on the screen.
+			*/
+			
+			function displaySpeed()
+			{
+				remove('rotationNumber');
+				
+				var textEle=document.createTextNode(scaleSpeedToDisplay()+' M/s');
+				$('rotationNumber').appendChild(textEle);
+				lightGlow(scaleSpeedToDisplay());
+			}
+			
+			/**
+			* This function displays the total energy generated on the screen.
+			*/
+			
+			function displayEnergy()
+			{				
+				remove('energyNumber');
+				
+				var speed=parseInt(scaleSpeedToDisplay())+parseInt(windSpeed);
+				var textEle=document.createTextNode(speed + ' kW');
+				$('energyNumber').appendChild(textEle);
+			}
+			
+			/**
+			* This function sets the morning colors and sun accordingly
+			*/
+			
+			function morning()
+			{				
+				if(!isMorning)
+				{
+					if(document.getElementById('skyColor'))
+					{
+						document.getElementsByTagName('defs')[0].removeChild(document.getElementById('skyColor'));
+					}
+				
+					setMorningColor();
+				
+					var sky=$('sky');
+					sky.setAttributeNS(svgns, 'opacity', '0.5');
+					
+					setSun();
+					
+				}
+				
+			}
+			
+			/**
+			* This function will set up the sun and is called from morning() function.
+			*/
+			
+			function setSun()
+			{
+				var fsun=$('sun');
+				fsun.setAttributeNS(null, 'fill', 'none');
+				fsun.setAttributeNS(null, 'fill', 'url(#sunColor)');
+				fsun.setAttributeNS(null, 'stroke', 'yellow');
+				
+				var windy=$('windy');
+				windy.setAttributeNS(null, 'stroke', '#4A4A4A');
+											
+				
+				/*if($('moon'))
+				{
+					$('moon').parentNode.removeChild($('moon'));				
+				}
+				
+				if($('sun'))
+				{
+					$('sun').parentNode.removeChild($('sun'));				
+				}				
+
+				var sunEle=document.createElementNS(svgns,'circle');
+				sunEle.setAttributeNS(null,'id','sun');
+				sunEle.setAttributeNS(null,'r','40px');
+				sunEle.setAttributeNS(null,'fill','url(#sunColor)');
+				sunEle.setAttributeNS(null,'opacity','0.6');	
+								
+				$('cel').appendChild(sunEle);
+												
+				var amEle=document.createElementNS(svgns,'animateMotion');
+				amEle.setAttributeNS(null,'dur','5s');
+				amEle.setAttributeNS(null,'fill','freeze');
+				//amEle.setAttributeNS(svgns, 'begin', //'document.getElementsByTagName('svg')[0].getCurrentTime()');
+				
+				$('sun').appendChild(amEle);
+				
+				var mpathEle=document.createElementNS(svgns,'mpath');
+				mpathEle.setAttributeNS(xlinkns,'xlink:href','#sunPath');
+				
+				$('sun').getElementsByTagName('animateMotion')[0].appendChild(mpathEle);	
+				
+				var ancEle=document.createElementNS(svgns, 'animateColor');
+				ancEle.setAttributeNS(null,'dur','5s');
+				ancEle.setAttributeNS(null,'attributeName','fill');
+				ancEle.setAttributeNS(null,'values','yellow;url(#sunColor);');
+				ancEle.setAttributeNS(null,'values','yellow;url(#sunColor);');
+				
+				$('sun').appendChild(ancEle);*/
+				
+				/*var anEle=document.createElementNS(svgns,'animate');
+				anEle.setAttributeNS(null,'attributeName','opacity');
+				anEle.setAttributeNS(null,'from','0.6');				
+				anEle.setAttributeNS(null,'to','0.8');
+				anEle.setAttributeNS(null,'dur','5s');
+				anEle.setAttributeNS(null,'fill','freeze');
+				anEle.setAttributeNS(null,'repeatCount','indefinite');
+				
+				$('sun').appendChild(anEle);*/							
+			
+			}
+
+			/**
+			*	 This function will generate the morning colors for sky dynamically.
+			*/
+			
+			function setMorningColor()
+			{				
+					var lgEle=document.createElementNS(svgns,'linearGradient');
+					lgEle.setAttributeNS(null,'id','skyColor');
+					lgEle.setAttributeNS(null,'x1','0%');
+					lgEle.setAttributeNS(null,'y1','0%');
+					lgEle.setAttributeNS(null,'x2','0%');
+					lgEle.setAttributeNS(null,'y2','100%');
+					
+					document.getElementsByTagName('defs')[0].appendChild(lgEle);
+					
+					var stopEle=document.createElementNS(svgns,'stop');
+					stopEle.setAttributeNS(null,'offset','0%');
+					stopEle.setAttributeNS(null,'style','stop-color:#25587E;stop-opacity:1');
+					$('skyColor').appendChild(stopEle);
+					
+					var stopEle1=document.createElementNS(svgns,'stop');
+					stopEle1.setAttributeNS(null,'offset','10%');
+					stopEle1.setAttributeNS(null,'style','stop-color:#306EFF;stop-opacity:1');
+					$('skyColor').appendChild(stopEle1);
+					
+					var stopEle2=document.createElementNS(svgns,'stop');
+					stopEle2.setAttributeNS(null,'offset','80%');
+					stopEle2.setAttributeNS(null,'style','stop-color:#3090C7;stop-opacity:1');
+					$('skyColor').appendChild(stopEle2);
+					
+					var stopEle3=document.createElementNS(svgns,'stop');
+					stopEle3.setAttributeNS(null,'offset','100%');
+					stopEle3.setAttributeNS(null,'style','stop-color:#ffff00;stop-opacity:1');
+					$('skyColor').appendChild(stopEle3);				
+			}
+			
+			/**
+			*	This function is called on click event of Night and sets up night
+			*	colors and the moon accordingly.
+			*/
+			
+			function night()
+			{
+				if(!isNight)
+				{	
+					if($('skyColor'))
+					{
+						document.getElementsByTagName('defs')[0].removeChild(document.getElementById('skyColor'));
+					}
+					
+					setNightColor();	
+					
+					var sky=$('sky');
+					sky.setAttributeNS(svgns, 'opacity', '0.9');					
+					
+					setMoon();				
+					
+				}
+			}
+			
+			/**
+			*	This function will set up the moon and is called from night() function.
+			*/
+			
+			function setMoon()
+			{	
+				var fmoon=$('sun');
+				fmoon.setAttributeNS(null, 'fill', 'url(#moonColor)');
+				fmoon.setAttributeNS(null, 'stroke', 'white');
+				
+				var windy=$('windy');
+				windy.setAttributeNS(null, 'stroke', '#BABABA');
+				
+				/*if($('sun'))
+				{
+					$('sun').parentNode.removeChild($('sun'));				
+				}
+				
+				if($('moon'))
+				{
+					$('moon').parentNode.removeChild($('moon'));				
+				}
+				
+				var moonEle=document.createElementNS(svgns,'circle');
+				moonEle.setAttributeNS(null,'id','moon');
+				moonEle.setAttributeNS(null,'r','40px');
+				moonEle.setAttributeNS(null,'fill','url(#moonColor)');
+				moonEle.setAttributeNS(null,'opacity','0.6');	
+								
+				$('cel').appendChild(moonEle);
+								
+				var amEle=document.createElementNS(svgns,'animateMotion');
+				amEle.setAttributeNS(null,'dur','4.8s');
+				amEle.setAttributeNS(null,'fill','freeze');
+				//amEle.setAttributeNS(null, 'begin', 'document.getElementsByTagName('svg')[0].getCurrentTime()');
+												
+				$('moon').appendChild(amEle);
+				
+				var mpathEle=document.createElementNS(svgns,'mpath');
+				mpathEle.setAttributeNS(xlinkns,'xlink:href','#moonPath');
+				
+				$('moon').getElementsByTagName('animateMotion')[0].appendChild(mpathEle);*/				
+				
+				
+			}
+			
+			/**
+			*	This function will set up the night colors dynamically
+			*/
+			
+			function setNightColor()
+			{
+				var lgEle=document.createElementNS(svgns,'linearGradient');
+				lgEle.setAttributeNS(null,'id','skyColor');
+				lgEle.setAttributeNS(null,'x1','0%');
+				lgEle.setAttributeNS(null,'y1','0%');
+				lgEle.setAttributeNS(null,'x2','0%');
+				lgEle.setAttributeNS(null,'y2','100%');
+					
+				document.getElementsByTagName('defs')[0].appendChild(lgEle);
+				
+				var stopEle=document.createElementNS(svgns,'stop');
+				stopEle.setAttributeNS(null,'offset','0%');
+				stopEle.setAttributeNS(null,'style','stop-color:#25587E;stop-opacity:1');
+				document.getElementById('skyColor').appendChild(stopEle);
+					
+				var stopEle1=document.createElementNS(svgns,'stop');
+				stopEle1.setAttributeNS(null,'offset','10%');
+				stopEle1.setAttributeNS(null,'style','stop-color:#000010;stop-opacity:1');
+				document.getElementById('skyColor').appendChild(stopEle1);
+					
+				var stopEle2=document.createElementNS(svgns,'stop');
+				stopEle2.setAttributeNS(null,'offset','80%');
+				stopEle2.setAttributeNS(null,'style','stop-color:#1E2442;stop-opacity:1');
+				document.getElementById('skyColor').appendChild(stopEle2);
+					
+				var stopEle3=document.createElementNS(svgns,'stop');
+				stopEle3.setAttributeNS(null,'offset','100%');
+				stopEle3.setAttributeNS(null,'style','stop-color:#000024;stop-opacity:1');
+				document.getElementById('skyColor').appendChild(stopEle3);		
+			}
+			
+			/**
+			*	This function is used to remove the child nodes.
+			*/
+			
+			function remove(which)
+			{
+				var x=$(which);
+			
+				if(x.hasChildNodes())
+				{
+					while (x.lastChild) 
+					{
+						x.removeChild(x.lastChild);
+					}
+				}			
+			}
+				
+			function $(which)
+			{
+				return document.getElementById(which);
+			}//end function $
+	
+		]]>
+		
+	</script>
+
+	<!-- Contains all the resuable things defined in here -->
+	<defs id="myDefs">
+	
+		<!-- The tower of the wind mill -->
+		<g id="tower" filter="url(#f1)">
+			<line x1="10" y1="600" x2="60" y2="200" stroke="#544E4F" stroke-width="4px" opacity="0.7" />
+			<line x1="60" y1="200" x2="110" y2="600" stroke="#544E4F" stroke-width="4px" opacity="0.7" />
+		</g>
+		
+		<!-- The propeller of the wind mill reused several times -->
+		<g id="propeller">
+		
+			<line x1="60" y1="200" x2="60" y2="140" stroke="#7d4b24" stroke-width="6px" stroke-linecap="round" />
+						
+			<line x1="60" y1="200" x2="17" y2="243" stroke="#7d4b24" stroke-width="6px" stroke-linecap="round" />
+			
+			<line x1="60" y1="200" x2="103" y2="243" stroke="#7d4b24" stroke-width="6px" stroke-linecap="round" />
+			
+			<circle cx="60" cy="200" r="7" stroke="#544E4F" fill="none">
+			</circle>		
+					
+		</g>
+		<!-- Triangle shape used as arrow marks on wind mill speed control dash board -->
+		<polygon id="arrow" points="0,0  25,0  12.5,25" style="stroke:#660000; fill:#cc3333;"/>
+		
+		<!-- Gradient for the dash board. Source: multiple examples combined -->
+		
+		<linearGradient id="surface" gradientUnits="objectBoundingBox"
+		  x1="1" x2="1" y1="0" y2="1">
+		  <stop stop-color="#990000" offset="0"/>
+		  <stop stop-color="#770000" offset="0.67"/>
+		</linearGradient>
+
+		<!-- Filter source: Multiple sites showing examples of shadows and blur -->
+		
+		<filter id="virtual_light" filterUnits="objectBoundingBox"
+		  x="-0.1" y="-0.1" width="1.2" height="1.2">
+		  <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="alpha_blur"/>
+
+		  <!-- virtual shadow effect -->
+		  <feOffset in="alpha_blur" dx="4" dy="4" result="offset_alpha_blur"/>
+
+		  <!-- vitual lighting effect -->
+		  <feSpecularLighting in="alpha_blur" surfaceScale="5" specularConstant="1"
+			specularExponent="20" lighting-color="#FFFFFF" result="spec_light">
+			<fePointLight x="-5000" y="-10000" z="10000"/>
+		  </feSpecularLighting>
+		  <feComposite in="spec_light" in2="SourceAlpha" operator="in"
+			result="spec_light"/>
+		  <feComposite in="SourceGraphic" in2="spec_light"
+			operator="out" result="spec_light_fill"/>
+
+		  <!-- combine effects -->
+		  <feMerge>
+			<feMergeNode in="offset_alpha_blur"/>
+			<feMergeNode in="spec_light_fill"/>
+		  </feMerge>
+		</filter>
+	
+		<!-- Radial Gradient to fill up the Moon -->
+		<radialGradient id="moonColor" gradientUnits="objectBoundingBox" fx="30%" fy="30%">	 
+		  <stop offset="0%" style="stop-color:#FFFFFF" />
+		  <stop offset="40%" style="stop-color:#E8E8E8" />
+		  <stop offset="90%" style="stop-color:#DEDCDC" />
+		  <stop offset="100%" style="stop-color:#BABABA" />
+		</radialGradient>
+		
+		<!-- Radial Gradient to fill up the grass -->
+		<radialGradient id="grassColor" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+		  <stop offset="0%" style="stop-color:#254117;
+		  stop-opacity:1" />
+		  <stop offset="100%" style="stop-color:#52D017;stop-opacity:1" />
+		</radialGradient>
+		
+		<!-- Radial Gradient to fill up the Sun -->		
+		<radialGradient id="sunColor" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+		  <stop offset="0%" style="stop-color:rgb(255,255,0);
+		  stop-opacity:1" />
+		  <stop offset="100%" style="stop-color:rgb(255,0,0);stop-opacity:1" />
+		</radialGradient>
+		
+		<!-- Filter used for the blur shadow effect on the back of windmills: Source: W3C -->
+		<filter id="f1" x="0" y="0" width="200%" height="200%">
+		  <feOffset result="offOut" in="SourceAlpha" dx="-40" dy="-200" />
+		  <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
+		  <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+		</filter>
+
+		<!-- Pattern used as wind blowing. Please excuse me for this ugly pattern.
+					I couldn't make a proper wind pattern using paths -->
+		<text id="windy" stroke="#4A4A4A" opacity="0.8"> 	.--..
+				~~~--~
+				...~~..				
+		</text>		
+		
+		<!-- cloud source http://upload.wikimedia.org/wikipedia/commons/7/73/W_cloud.svg -->
+		<path id="cloud" opacity="0.6" style="fill:gray;fill-rule:evenodd;stroke:#000000;stroke-width:1.2500000;stroke-dasharray:none;stroke-linejoin:round;" d="M 48.996171,37.251271 C 47.958668,32.143973 39.185631,24.658486 33.930828,26.057885 C 27.350244,27.875054 24.319102,33.750906 29.022229,38.180278 C 24.861109,35.364180 14.478948,32.941167 8.8516150,42.752305 C 5.3584330,50.061076 15.250525,54.633620 18.276730,54.093064 C 12.486132,53.396616 -1.7806601,65.306814 4.5717298,71.373662 C 12.398859,77.540434 30.328023,70.871946 31.115271,65.721140 C 29.368597,73.253219 49.289455,74.699245 49.782264,64.230844 C 48.360488,69.138884 62.574082,74.362572 69.331408,72.364112 C 77.800433,70.297826 76.782138,63.322187 75.780037,61.195189 C 82.294178,61.939711 92.493777,63.786015 97.011836,57.091162 C 100.16106,50.764622 98.288765,43.698338 94.234782,41.475620 C 89.817633,39.373843 84.991240,39.483372 79.361925,43.043469 C 83.828729,40.136070 81.073796,30.760619 76.597083,28.701006 C 71.495048,26.361815 65.365281,25.905286 59.859869,27.042626 C 55.323516,27.769206 48.144478,31.594752 48.996171,37.251271 z " >
+		</path>
+ 
+	</defs>
+
+	
+	<g id="caption">
+		<rect id="capt" height="100" width="190" x="950" y="10" fill="white" stroke-width="4px" stroke="blue" rx="10" ry="10" stroke-dasharray="2,2" opacity="0.8" stroke-opacity="0.2"></rect>
+		<text x="980" y="55" font-size="32" fill="red"> Wind</text>
+		<text x="1024" y="95" font-size="32" fill="green">Farm</text>		
+	</g>
+	
+		<!-- DashBoard - WindMill Speed Controls -->
+	<rect x="960" y="260" width="200" height="120" stroke="black" stroke-width="2px" fill="url(#surface)" filter="url(#virtual_light)">
+		<animate id="aniOne" attributeName="height" from="0" to="120" dur="3s"/>
+	</rect>
+
+	<text x="1010" y="280" fill="white" font-size="22px">Wind Mill</text>
+	<text x="985" y="310" fill="#ddd" font-size="26px">Speed Control</text>
+	
+	<!-- Speed Display -->
+	<rect opacity="0" x="1010" y="380" rx="15" ry="15" width="100" height="60"
+    fill="url(#surface)" stroke="#360000" filter="url(#virtual_light)">
+		<animate id="aniTwo" attributeName="opacity" from="0" to="1" dur="1s" begin="aniOne.end+1s" fill="freeze"/>
+	</rect>
+
+	<text id="rotationNumber" x="1041" y="415" fill="white" font-family="Tahoma" font-size="20" font-weight="500">		
+	</text>	
+	
+	<rect opacity="0" x="1010" y="442" rx="15" ry="15" width="100" height="60"
+    fill="url(#surface)" stroke="#360000" filter="url(#virtual_light)">
+		<animate id="aniThree" attributeName="opacity" from="0" to="1" dur="1s" begin="aniTwo.end" fill="freeze"/>
+	</rect>
+	<text x="1032" y="460" fill="white" font-family="Tahoma" font-size="12" font-weight="500">				Total Energy
+	</text>	
+	<text id="energyNumber" x="1041" y="485" fill="white" font-family="Tahoma" font-size="20" font-weight="500">	
+	</text>	
+	
+	
+	<!-- Group containing the Morning/Night elements -->
+	<g>
+	<rect x="1187" y="35" rx="4px" ry="4px" fill="#F7EB5E" stroke="#FFD000" stroke-width="2px" stroke-opacity="0.4" width="90" height="30" class="buttongrp" />
+	<text cursor="pointer" id="mornText" x="1200" y="55" font-weight="bold" onclick="morning()" fill="#5B3CD6" font-size="18">
+			Morning
+		<animateColor attributeName="fill" values="#aa3300;#0000ff;#00ff00;#ff0000" dur="3.8s" begin="mornText.mouseup" fill="freeze"/>
+	</text>
+	<rect x="1187" y="75" rx="4px" ry="4px" fill="#A0F2A3" width="90" height="30" stroke-with="2" stroke="066109" stroke-opacity="0.4" />
+	<text cursor="pointer" fill="#312270" id="nightText" font-weight="bold" onclick="night()" x="1210" y="95" font-size="18">
+			Night
+		<animateColor attributeName="fill" values="#aa3300;#0000ff;#00ff00;#ff0000" dur="3.8s" begin="nightText.mouseup" fill="freeze"/>
+	</text>
+	</g>
+	
+	<!-- Group for the Arrows controlling the speed of windmills -->
+		<!-- To increase Speed -->
+	<g id="inc" cursor="pointer" class="buttongrp" opacity="0.6" onclick="increaseSpeed()" >
+		<rect x="1000" y="335" rx="10" ry="10" width="35" height="35" fill="yellow">
+		</rect>
+		<use xlink:href="#arrow" x="980" y="365.5" transform="rotate(180,1005,365.5)"/>		
+	</g>
+		<!-- To decrease Speed -->
+	<g id="dec" cursor="pointer" class="buttongrp" opacity="0.6" onclick="decreaseSpeed()"> 
+		<rect x="1080" y="335" rx="10" ry="10" width="35" height="35" fill="yellow">
+		</rect>	
+		<use xlink:href="#arrow" x="1085" y="342"/>
+	</g>
+	
+		<!-- Reuse of towers/propellers to create a group of Wind Mills -->
+	<use x="200px" y="10px" xlink:href="#tower" />
+	<use x="200px" y="10px" xlink:href="#propeller" />	
+
+	<use x="400px" y="10px" xlink:href="#tower" />
+	<use x="400px" y="10px" xlink:href="#propeller" />	
+	
+	<use x="600px" y="10px" xlink:href="#tower" />
+	<use x="600px" y="10px" xlink:href="#propeller" />
+	
+	<use x="800px" y="10px" xlink:href="#tower" />
+	<use x="800px" y="10px" xlink:href="#propeller" />	
+	
+		<!-- Reuse of the wind pattern along the paths to create windy effect -->
+	
+	<use xlink:href="#windy" >
+			<animateMotion begin="2s" dur="8s" repeatCount="indefinite">
+				<mpath xlink:href="#movePath1" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0" to="0.8" dur="8s" begin="2s" fill="freeze"/>
+	</use>
+
+	<use xlink:href="#windy" >
+			<animateMotion begin="0s" dur="4s" repeatCount="indefinite">
+				<mpath xlink:href="#movePath" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0.1" to="0.8" dur="4s" begin="0s" fill="freeze"/>
+	</use>
+	<use xlink:href="#windy" >
+			<animateMotion begin="2s" dur="3.5s" repeatCount="indefinite">
+				<mpath xlink:href="#movePath2" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0.1" to="0.8" dur="3.5s" begin="2s" fill="freeze"/>
+	</use>
+		<use xlink:href="#windy" >
+			<animateMotion begin="0s" dur="12s" repeatCount="indefinite">
+				<mpath xlink:href="#movePath3" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0.2" to="0.8" dur="12s" begin="0s" fill="freeze"/>
+	</use>
+		<use xlink:href="#windy" >
+			<animateMotion begin="1s" dur="4s" repeatCount="indefinite">
+				<mpath xlink:href="#movePath4" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0.1" to="0.9" dur="3.5s" begin="1s" fill="freeze"/>
+	</use>
+		
+			<!-- Sun/Moon- Celestial Bodies -->
+	<g id="cel">
+
+		<circle id="sun" r="40px" fill="url(#sunColor)" stroke-width="14px" stroke="yellow" stroke-opacity="0.2" opacity="0.6">
+			<animateMotion dur="2s" fill="freeze" >
+				<mpath xlink:href="#sunPath" />
+			</animateMotion>
+			<animate attributeName="opacity" from="0.6" to="0.8" dur="5s" fill="freeze" repeatCount="indefinite" />
+		</circle>
+	</g>
+	<!-- To Group of all the paths used to make wind,sun,moon move -->
+		<!-- 
+			I tried to have only one path in the defs and reuse it multiple times
+			so that each time a 'windy' element could be animated along the reused
+			path. But the mpath element does not seem to recognize this and fails.
+			Hence I have multiple versions of the same path.
+		-->
+	<g id="paths">
+
+		<path id="sunPath" fill="none" stroke="none" stroke-miterlimit="10" d="M63.85,795.953c0-401.838,325.162-727,727-727"/>
+			
+		<path id="movePath1" fill="none" stroke-miterlimit="10" d="M229,389c71-33,153-41,230-19c5,1,9,1,14,3c3,1,6,2,9,3s5,3,8,4 c2,1,3,0,5,1c6,3,12,5,17,8h-1c88,42,194,40,283,0"/>
+		
+		<path id="movePath" fill="none" stroke-miterlimit="10" d="M129,289c71-33,153-41,230-19c5,1,9,1,14,3c3,1,6,2,9,3s5,3,8,4 c2,1,3,0,5,1c6,3,12,5,17,8h-1c88,42,194,40,283,0"/> 
+		
+		<path id="movePath2" fill="none" stroke-miterlimit="10" d="M129,420c71-33,153-41,230-19c5,1,9,1,14,3c3,1,6,2,9,3s5,3,8,4 c2,1,3,0,5,1c6,3,12,5,17,8h-1c88,42,194,40,283,0"/> 
+		
+		<path id="movePath3" fill="none" stroke-miterlimit="10" d="M116,200c71-33,153-41,230-19c5,1,9,1,14,3c3,1,6,2,9,3s5,3,8,4 c2,1,3,0,5,1c6,3,12,5,17,8h-1c88,42,194,40,283,0"/> 
+		
+		<path id="movePath4" fill="none" stroke-miterlimit="10" d="M129,500c71-33,153-41,230-19c5,1,9,1,14,3c3,1,6,2,9,3s5,3,8,4 c2,1,3,0,5,1c6,3,12,5,17,8h-1c88,42,194,40,283,0"/> 
+		
+		<path id="moonPath" fill="none" stroke="none" stroke-miterlimit="10" d="M593.681,791.202
+		c0-400.958-203.952-725.408-455.999-725.408"/>
+		 
+	</g>	
+	
+	<!-- Cloud -->
+	<use xlink:href="#cloud" ></use>
+	   
+	 <!-- Lighthouse - colors vary depending on the amount of wind energy produced -->  
+	<rect stroke-dasharray="2,2" stroke="black" id="light" fill="none" x="1200" y="500" height="50" width="10" />
+	<circle stroke-dasharray="2,2" stroke="black" id="light2" cx="1205" cy="490" r="12" fill="none" />
+	<text x="1220" y="500" font-size="12px">This lighthouse will
+					<tspan x="1220" y="520">change color depending</tspan>
+					<tspan x="1220" y="540">on the total energy produced</tspan>
+	</text>
+   
+   <text id="footer" x="600" y="635" font-weight="500" fill="white">
+		Amaranath Jupalli
+	</text>
+   
+</svg>

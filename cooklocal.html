@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+</title>
+<script type="text/javascript"> var ie7=0; </script>
+
+<!--[if lte IE 7]> 
+<script type="text/javascript"> var ie7 = 1; </script>
+<![endif]-->
+
+<script type="text/javascript" src="cookies.js"></script>
+<script type="text/javascript">
+//let do cookies and localStorage shit
+function go(uname)
+{
+
+if(window.localStorage)
+{
+	if(uname)
+	{
+		window.localStorage.setItem('uname', uname);
+		window.localStorage.setItem('hitc', 1);
+	}
+	if(localStorage.getItem('uname'))
+	{
+	
+	var dele=document.createElement('div');
+	var text=document.createTextNode('You are ' + localStorage.getItem('uname')+' '+'and locally stored and visiting '+(localStorage.getItem('hitc')));
+	dele.appendChild(text);
+	document.getElementsByTagName('body')[0].appendChild(dele);
+	localStorage.setItem('hitc',parseInt(localStorage.getItem('hitc'))+1);
+	}
+}
+
+if(GetCookie('uname') == null || GetCookie('uname') == undefined)
+{
+
+SetCookie('uname',"Asal");
+SetCookie('hit_count',1);
+	if(ie7>0)
+	{
+		
+		var dele=document.createElement('div');
+		var text=document.createTextNode('You are ' + GetCookie('uname')+' '+'and locally stored and visiting '+ GetCookie('hit_count'));
+		dele.appendChild(text);
+		document.getElementsByTagName('body')[0].appendChild(dele);
+	}
+}
+else
+{
+	if(ie7>0)
+	{
+		var dele=document.createElement('div');
+		var text=document.createTextNode('You are ' + GetCookie('uname')+' '+'and locally stored and visiting '+ GetCookie('hit_count'));
+		dele.appendChild(text);
+		document.getElementsByTagName('body')[0].appendChild(dele);
+	}
+SetCookie('hit_count',parseInt(GetCookie('hit_count'))+1);
+}
+
+}
+
+function clearIt()
+{
+if(localStorage)
+{
+localStorage.setItem('uname','');
+//document.getElementsByTagName('body')[0].style.background=localStorage.getItem('color');
+localStorage.setItem('hitc', 0);
+}
+DeleteCookie('uname');
+DeleteCookie('hit_count');
+
+}
+
+
+
+
+
+//if(GetCookie('uname')==null)
+//{
+	//alert('uname is ' + name);
+//}
+//else
+//{
+	//alert('cookie not set');
+//}
+
+
+</script>
+
+</head>
+<body onload="go()">
+
+<input type="text" id="mytext" name="text1" />
+<button id="button1" onclick="go(document.getElementById('mytext').value)">Goooo</button>
+<br />
+<span onclick="clearIt()">clear name</span> <br />
+
+<!--<span onclick="go('hit')">Hit</span> <br />
+<span onclick="go('duck')">Duck</span> </br /> -->
+
+</body>
+</html>

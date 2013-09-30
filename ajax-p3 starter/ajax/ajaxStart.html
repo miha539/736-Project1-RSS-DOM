@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+	<meta charset="utf-8" />
+    <title>Using $.ajax() to get XML</title>
+    <script src="http://code.jquery.com/jquery-latest.js">
+    </script>
+  
+    <script>
+	$(document).ready(function(){
+		//assign the onchange event to all selects
+		$(document).on('change','select', function() { Const(); });
+		
+		Const('sandwiches');
+
+	//if its mulitple things then it has to be object
+	});
+	
+	function Const(file)
+	{
+		$.ajax({
+			type:'get',
+			url:file+'.xml',
+			dataType:'xml',
+			async:true,
+			cache:false,
+			success:comeback,
+			error:err
+		}); 
+	}
+	
+	function comeback(data,status){
+		//build a select from the xml object
+		varx='<select>';
+		$('sandwich',data).each(function(){
+			x+='<option value="">';
+		});
+	}
+	function err(event){
+		console.dir(event);
+		
+	}
+    </script>
+  </head>
+
+  <body>
+    <h1>Using $.ajax() to get XML</h1>
+    <form>
+    </form>
+  </body>
+</html>

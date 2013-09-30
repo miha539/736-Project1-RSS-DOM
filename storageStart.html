@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Storage Example</title>
+<script type="text/javascript" src="cookies.js"></script>
+<script type="text/javascript">
+////////////////////////////Careful - does not work on file:// (MUST upload to gibson)
+////////////////////////////Also - Though testing as IE7 in IE9 says localStorage works, it does NOT
+//localStorage
+function checkColor(toWhat){
+if(window.localStorage){
+if(toWhat){ //check if I sent in a new color to be
+window.localStorage.setItem('color',toWhat);
+}
+if(localStorage.getItem('color')){
+document.getElementsByTagName('body')[0].style.background=localStorage.getItem('color');
+}
+}else{
+//do cookies because dan is making me
+}
+}
+function clearIt(){
+if(localStorage){
+localStorage.setItem('color','');
+document.getElementsByTagName('body')[0].style.background=localStorage.getItem('color');
+}
+}
+
+//cookie
+if(GetCookie('user_id') == null){//have they been here before?
+//no cookie, first time
+var name=prompt('welcome to my site, first time','');
+document.write('welcome '+name+"'s this is your first time here!");
+SetCookie('user_id',name);
+SetCookie('hit_count',2);
+}else{
+//the cookie exists -> they been here before
+document.write('welcome back, '+GetCookie('user_id')+" you have been here "+GetCookie('hit_count')+' times!');
+SetCookie('hit_count',parseInt(GetCookie('hit_count'))+1);
+}
+
+</script>
+</head>
+<body onload="checkColor()">
+<div style="position:absolute;right:10px;bottom:10px;background:#c9c;">
+Change your style. <span style="pointer:finger" onclick="checkColor('red')">Red</span> |
+<span style="pointer:finger" onclick="checkColor('green')">Green</span> |
+<span style="pointer:finger" onclick="clearIt()">Clear</span>
+</div>
+</body>
+</html>

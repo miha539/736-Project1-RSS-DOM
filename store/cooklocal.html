@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>
+</title>
+<script type="text/javascript" src="cookies.js"></script>
+<script type="text/javascript">
+//let do cookies and localStorage shit
+function go(uname)
+{
+
+if(window.localStorage)
+{
+	if(uname)
+	{
+		window.localStorage.setItem('uname', uname);
+		window.localStorage.setItem('hitc', 1);
+	}
+	if(localStorage.getItem('uname'))
+	{
+	//document.write('You are ' + localStorage.getItem('uname')+' '+'and locally stored and visiting '+(localStorage.getItem('hitc')));
+	
+	//alert(parseInt(localStorage.getItem('hitc'))+1);
+	//document.write('you wanna ' + localStorage.getItem('cw'));
+	var dele=document.createElement('div');
+	var text=document.createTextNode('You are ' + localStorage.getItem('uname')+' '+'and locally stored and visiting '+(localStorage.getItem('hitc')));
+	dele.appendChild(text);
+	document.getElementsByTagName('body')[0].appendChild(dele);
+	localStorage.setItem('hitc',parseInt(localStorage.getItem('hitc'))+1);
+	}
+}
+}
+
+
+//if(GetCookie('uname')==null)
+//{
+	//alert('uname is ' + name);
+//}
+//else
+//{
+	//alert('cookie not set');
+//}
+
+
+</script>
+
+</head>
+<body onload="go()">
+
+<input type="text" id="mytext" name="text1" />
+<button id="button1" onclick="go(document.getElementById('mytext').value)">Goooo</button>
+<!-- span onclick="go('kill')">Kill</span> <br />
+<span onclick="go('hit')">Hit</span> <br />
+<span onclick="go('duck')">Duck</span> </br /> -->
+
+</body>
+</html>
